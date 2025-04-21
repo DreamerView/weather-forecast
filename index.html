@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Weather App</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <style>
+    body { padding: 1rem; }
+    .forecast-day {
+      border-top: 1px solid #dee2e6;
+      padding: 0.75rem 0;
+    }
+  </style>
+</head>
+<body class="bg-light container">
+
+  <h2 class="text-center mb-4">🌤 Weather Forecast</h2>
+
+  <div id="location-selector" class="mb-4 d-none">
+    <label for="citySelect" class="form-label">Select a city:</label>
+    <select id="citySelect" class="form-select" onchange="loadByCity(this.value)">
+      <option value="">-- choose city --</option>
+      <option value="51.17,71.43">Astana, Kazakhstan</option>
+      <option value="43.24,76.92">Almaty, Kazakhstan</option>
+      <option value="40.71,-74.01">New York, USA</option>
+      <option value="48.85,2.35">Paris, France</option>
+      <option value="35.68,139.69">Tokyo, Japan</option>
+    </select>
+  </div>
+
+  <div id="current" class="mb-4 text-center"></div>
+  <div id="forecast" class="mb-2"></div>
+
+  <footer class="text-center mt-4">
+        <p></p>Built with ❤️ by <strong>Temirkhan</strong></p>
+        <p>Project at <a target="_blank" href="https://github.com/DreamerView/weather-forecast">Github</a></p>
+    </footer>
+
+  <script>
+    const weatherCodes = {
+      0: "☀️ Clear",
+      1: "🌤 Mainly clear",
+      2: "⛅ Partly cloudy",
+      3: "☁️ Overcast",
+      45: "🌫 Fog",
+      48: "🌫 Dense fog",
+      51: "🌦 Light drizzle",
+      53: "🌦 Moderate drizzle",
+      55: "🌧 Heavy drizzle",
+      61: "🌧 Light rain",
+      63: "🌧 Moderate rain",
+      65: "🌧 Heavy rain",
+      71: "🌨 Light snow",
+      73: "🌨 Moderate snow",
+      75: "❄️ Heavy snow",
+      95: "⛈ Thunderstorm",
+      99: "⛈ Thunderstorm w/hail"
+    };
+
+    const $ = id => document.getElementById(id);
+
+    const showWeather = (data) => {
+      const { current_weather, daily } = data;
+
+      $("current").innerHTML = `
+        <h4>📍 ${data.latitude.toFixed(2)}, ${data.longitude.toFixed(2)}</h4>
+        <div class="fs-5 mb-2">
+          <strong>${weatherCodes[current_weather.weathercode] || "Unknown"}</strong><br>
+          🌡 ${current_weather.temperature}°C &nbsp; | &nbsp;
+          💨 ${current_weather.windspeed} km/h
+        </div>
+      `;
+
+      $("forecast").innerHTML = "<h5 class='text-center'>7-Day Forecast</h5>";
+      daily.time.forEach((day, i) => {
+        $("forecast").insertAdjacentHTML("beforeend", `
+          <div class="forecast-day d-flex justify-content-between">
+            <div>${new Date(day).toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' })}</div>
+            <div>${weatherCodes[daily.weathercode[i]] || "🌡"} </div>
+            <div>🌡 ${daily.temperature_2m_min[i]}° / ${daily.temperature_2m_max[i]}°</div>
+            <div>🌧 ${daily.precipitation_sum[i]} mm</div>
+            <div>💨 ${daily.windspeed_10m_max[i]} km/h</div>
+          </div>
+        `);
+      });
+    };
+
+    const fetchWeather = async (lat, lon) => {
+      const url = `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current_weather=true&daily=temperature_2m_min,temperature_2m_max,weathercode,precipitation_sum,windspeed_10m_max&timezone=auto`;
+      const res = await fetch(url);
+      const data = await res.json();
+      showWeather(data);
+    };
+
+    const loadByCity = value => {
+      if (!value) return;
+      const [lat, lon] = value.split(",");
+      fetchWeather(lat, lon);
+    };
+
+    // Геолокация
+    navigator.geolocation.getCurrentPosition(
+      pos => fetchWeather(pos.coords.latitude, pos.coords.longitude),
+      err => {
+        console.warn("Geolocation failed, choosing city manually.");
+        $("location-selector").classList.remove("d-none");
+      }
+    );
+  </script>
+
+</body>
+</html>
