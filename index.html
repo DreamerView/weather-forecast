@@ -7,10 +7,6 @@
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
   <style>
     body { padding: 1rem; }
-    .forecast-day {
-      border-top: 1px solid #dee2e6;
-      padding: 0.75rem 0;
-    }
   </style>
 </head>
 <body class="bg-light container">
@@ -33,9 +29,9 @@
   <div id="forecast" class="mb-2"></div>
 
   <footer class="text-center mt-4">
-        <p></p>Built with ❤️ by <strong>Temirkhan</strong></p>
-        <p>Project at <a target="_blank" href="https://github.com/DreamerView/weather-forecast">Github</a></p>
-    </footer>
+    <p>Built with ❤️ by <strong>Temirkhan</strong></p>
+    <p>Project at <a target="_blank" href="https://github.com/DreamerView/weather-forecast">GitHub</a></p>
+  </footer>
 
   <script>
     const weatherCodes = {
@@ -64,7 +60,6 @@
       const { current_weather, daily } = data;
 
       $("current").innerHTML = `
-        <h4>📍 ${data.latitude.toFixed(2)}, ${data.longitude.toFixed(2)}</h4>
         <div class="fs-5 mb-2">
           <strong>${weatherCodes[current_weather.weathercode] || "Unknown"}</strong><br>
           🌡 ${current_weather.temperature}°C &nbsp; | &nbsp;
@@ -72,18 +67,32 @@
         </div>
       `;
 
-      $("forecast").innerHTML = "<h5 class='text-center'>7-Day Forecast</h5>";
+      let table = `
+        <h5 class='text-center mb-3'>7-Day Forecast</h5>
+        <div class="table-responsive">
+          <table class="table table-bordered table-hover text-center align-middle">
+            <thead class="table-light">
+              <tr>
+                <th>Date</th>
+                <th>Condition</th>
+                <th>Temp (Min / Max)</th>
+              </tr>
+            </thead>
+            <tbody>
+      `;
+
       daily.time.forEach((day, i) => {
-        $("forecast").insertAdjacentHTML("beforeend", `
-          <div class="forecast-day d-flex justify-content-between">
-            <div>${new Date(day).toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' })}</div>
-            <div>${weatherCodes[daily.weathercode[i]] || "🌡"} </div>
-            <div>🌡 ${daily.temperature_2m_min[i]}° / ${daily.temperature_2m_max[i]}°</div>
-            <div>🌧 ${daily.precipitation_sum[i]} mm</div>
-            <div>💨 ${daily.windspeed_10m_max[i]} km/h</div>
-          </div>
-        `);
+        table += `
+          <tr>
+            <td>${new Date(day).toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' })}</td>
+            <td>${weatherCodes[daily.weathercode[i]] || "🌡"}</td>
+            <td>${daily.temperature_2m_min[i]}° / ${daily.temperature_2m_max[i]}°</td>
+          </tr>
+        `;
       });
+
+      table += `</tbody></table></div>`;
+      $("forecast").innerHTML = table;
     };
 
     const fetchWeather = async (lat, lon) => {
@@ -99,7 +108,6 @@
       fetchWeather(lat, lon);
     };
 
-    // Геолокация
     navigator.geolocation.getCurrentPosition(
       pos => fetchWeather(pos.coords.latitude, pos.coords.longitude),
       err => {
