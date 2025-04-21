@@ -24,8 +24,7 @@ If geolocation is unavailable or denied, it provides a list of popular cities to
 ## 🚀 Live Demo
 
 👉 **GitHub Pages:**  
-[https://dreamerview.github.io/weather-forecast/](https://dreamerview.github.io/weather-forecast/)  
-_(← Replace with your actual GitHub Pages link)_
+[https://dreamerview.github.io/weather-forecast/](https://dreamerview.github.io/weather-forecast/)
 
 ---
 
